@@ -9,10 +9,18 @@ def resolve_name(node):
         return node.get("name")
     
     if nt == "BinaryOperation":
+        left = resolve_name(node.get("leftExpression"))
+        right = resolve_name(node.get("rightExpression"))
+        op = node.get("operator", "")
 
-        left = resolve_name(node["leftExpression"])
-        right = resolve_name(node["rightExpression"])
-        op = node["operator"]
+        if left == "" and right == "":
+            return ""
+
+        if left == "":
+            return f"{op} {right}"
+
+        if right == "":
+            return f"{left} {op}"
 
         return f"{left} {op} {right}"
 
@@ -32,5 +40,35 @@ def resolve_name(node):
         op = node.get("operator")
         sub = resolve_name(node.get("subExpression"))
         return f"{op}{sub}"
+    
+    if nt == "FunctionCall":
+        if node.get("kind") == "typeConversion":
 
+            type_name = resolve_name(node.get("expression"))
+
+            args = node.get("arguments", [])
+            if len(args) > 0:
+                arg = resolve_name(args[0])
+                return f"{type_name}({arg})"
+
+            return f"{type_name}()"
+        
+    if nt == "FunctionCall":
+        expr = resolve_name(node.get("expression"))
+        args = node.get("arguments", [])
+        arg_names = [resolve_name(a) for a in args if a]
+        return f"{expr}({', '.join(arg_names)})"
+        
+    if nt == "ElementaryTypeNameExpression":
+        next = node.get("typeName")
+        if next:
+            return next.get("name")
+        
+    if nt == "TupleExpression":
+        comps = node.get("components", [])
+        names = []
+        for c in comps:
+            if c:
+                names.append(resolve_name(c))
+        return ", ".join(names)
     return ""
