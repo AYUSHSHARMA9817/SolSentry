@@ -51,7 +51,6 @@ Each **detector** is an independent module that receives the IR of a function an
 ```bash
 git clone https://github.com/AYUSHSHARMA9817/SolSentry.git
 cd SolSentry
-pip install -r requirements.txt
 ```
 
 ### Run on a contract
