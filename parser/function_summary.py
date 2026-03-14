@@ -1,6 +1,6 @@
 class FunctionSummary:
 
-    def __init__(self, name, ops, modifiers,visibility):
+    def __init__(self, name, ops, modifiers,visibility,mutability):
 
         self.name = name
         self.reentrancy = False
@@ -10,6 +10,7 @@ class FunctionSummary:
         self.value_check = False
         self.eth_transfer = False
         self.visibility = visibility   
+        self.mutability = mutability
 
         self.analyze(ops)
         self.apply_modifiers(modifiers)

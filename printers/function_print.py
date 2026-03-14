@@ -1,5 +1,5 @@
 from parser.function_summary import FunctionSummary
-from ir.ast_walker import analyze_function, analyze_func_modifiers, analyze_visibility
+from ir.ast_walker import analyze_function, analyze_func_modifiers, analyze_visibility, analyze_mutability
 
 def print_func(functions,state_set,modifier_summaries,vulnerability_summaries):
     for func in functions:
@@ -8,6 +8,7 @@ def print_func(functions,state_set,modifier_summaries,vulnerability_summaries):
             ops = analyze_function(func, state_set)
             mods = analyze_func_modifiers(func)
             visibility = analyze_visibility(func)
+            mutability = analyze_mutability(func)
             modifier_summary = []
 
 
@@ -19,7 +20,7 @@ def print_func(functions,state_set,modifier_summaries,vulnerability_summaries):
                     modifier_summary.append(modifier_summaries[i])
                 print("\n")
 
-            summary = FunctionSummary(name,ops,modifier_summary,visibility)
+            summary = FunctionSummary(name,ops,modifier_summary,visibility,mutability)
 
             for num, op, var in ops:
                 if var != "require":
