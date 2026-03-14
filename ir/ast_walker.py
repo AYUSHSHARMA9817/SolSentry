@@ -3,12 +3,14 @@ from parser.name_resolver import resolve_name
 
 def is_external_call(name):
 
-    return any(name.endswith(x) for x in [
+    return any(x in name for x in [
         ".call",
         ".delegatecall",
         ".transfer",
         ".send",
-        ".staticcall"
+        ".staticcall",
+        ".balanceOf",
+        ".transferFrom"
     ])
 
 #--------------------- Extract Visibility -----------------
@@ -20,6 +22,14 @@ def analyze_visibility(func):
     return vis
 
 
+
+#--------------------- Extract Mutability -----------------
+def analyze_mutability(func):
+
+    vis = func.get("stateMutabilityity")
+    if vis == None:
+        vis = ""
+    return vis
 
 # -------------------- Analyze Function --------------------
 def analyze_function(func, state_set):
@@ -128,8 +138,16 @@ def process(node, operations, state_set, counter):
     # ---------------- Function Call ----------------
     elif nt == "FunctionCall":
 
+        if node.get("kind") == "typeConversion":
+            for arg in node.get("arguments", []):
+                process(arg, operations, state_set, counter)
+            return
+        
         expr = node.get("expression")
         call_name = resolve_name(expr)
+
+        if not call_name:
+            call_name = "unknown_call"
 
         req = require_parser(node)
 
@@ -223,11 +241,15 @@ def process(node, operations, state_set, counter):
         operations.append((counter[0],"CONTINUE",""))
 
     elif nt == "Return":
-        counter[0]+=1
-        operations.append((counter[0],"RETURN",""))
         expr = node.get("expression")
+
         if expr:
-            process(expr, operations, state_set, counter)
+            val = resolve_name(expr)
+        else:
+            val = ""
+
+        counter[0]+=1
+        operations.append((counter[0], "RETURN", val))
 
     # ---------------- FunctionCallOptions ----------------
     elif nt == "FunctionCallOptions":
@@ -236,6 +258,14 @@ def process(node, operations, state_set, counter):
 
         for opt in node.get("options", []):
             process(opt, operations, state_set, counter)
+    elif nt == "TupleExpression":
+        for comp in node.get("components", []):
+            process(comp, operations, state_set, counter)
+
+    elif nt == "Conditional":
+        process(node.get("condition"), operations, state_set, counter)
+        process(node.get("trueExpression"), operations, state_set, counter)
+        process(node.get("falseExpression"), operations, state_set, counter)
 
 def require_parser(node):
     expr = node.get("expression")
@@ -243,10 +273,15 @@ def require_parser(node):
         return None
     if expr.get("nodeType") == "Identifier" and expr.get("name") == "require":
         args = node.get("arguments",[])
-
         if len(args) == 0:
-            return None
-        condition = resolve_name(args[0])
+                return None
+        cond_node = args[0]
+        # unwrap tuple
+        if cond_node.get("nodeType") == "TupleExpression":
+            comps = cond_node.get("components", [])
+            if comps:
+                cond_node = comps[0]
+        condition = resolve_name(cond_node)
         message = None
         if len(args) > 1:
             message = args[1].get("value")
