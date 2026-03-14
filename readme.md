@@ -78,7 +78,7 @@ Solidity Contract
 # 🗂 Project Structure
 
 ```
-parser/
+SolSentry/
 │
 ├── compiler/
 │   └── solc_runner.py
@@ -109,7 +109,7 @@ parser/
 │   └── vulnerable_functions_print.py
 │
 ├── main.py
-└── Voting.sol
+└── test.sol
 ```
 
 ---
