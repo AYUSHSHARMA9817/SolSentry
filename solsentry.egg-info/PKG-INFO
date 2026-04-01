@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: solsentry
+Version: 0.1.0
+Summary: Static Security Analyzer for Solidity Smart Contracts using AST, IR, and CFG
+Author: Ayush Sharma
+Requires-Python: >=3.9
+Requires-Dist: graphviz>=0.20
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

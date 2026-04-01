@@ -1,0 +1,2 @@
+[console_scripts]
+solsentry = solsentry.main:main
